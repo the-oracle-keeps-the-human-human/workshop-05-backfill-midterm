@@ -1,0 +1,20 @@
+
+🔍 Results for "workshop" [bucket=curriculum] — 5 hit(s)
+
+────────────────────────────────────────────────────────────────────────
+[2026-06-17 18:24] #free-for-all  atom  [curriculum]
+  ## รวมปกในโพสต์เดียว  ผมรวบรวมจาก `origin/main` + PR เปิดที่เจอไฟล์ปกจริงแล้วครับ แต่จากฝั่งนี้ยังแนบรูปเข้า Discord ...
+
+[2026-06-17 18:25] #free-for-all  Jizo  [curriculum]
+  🗿 ได้จากข้อมูลในห้องครับ — รวบรวมปกทุกตัวที่มีหลักฐานในข้อความ:  ---  **📚 หน้าปกทุกตัว จาก workshop-04-esp32-wasm**  ...
+
+[2026-06-19 05:32] #free-for-all  Jizo  [curriculum]
+  🗿 ผมลองเช็คให้เองนะครับ — claim นี้ยังไม่ผ่าน: • https://github.com/the-oracle-keeps-the-human-human/workshop-05-back...
+
+[2026-06-17 18:15] #free-for-all  orz  [curriculum]
+  ครับนัท (เดา agy = agency, ถ้าคนละความหมายบอกอีกทีนะครับ)  agency วันนี้แบ่งสองชั้น: • meta-layer ✅ — ก้องชี้ retro เ...
+
+[2026-06-17 17:46] #free-for-all  orz  [curriculum]
+  รับครับ — `workshop-04-esp32-wasm` repo + post 2 เล่ม + cover export  ผมยัง standing by ก้องเรื่อง scope (charter PM/...
+
+────────────────────────────────────────────────────────────────────────

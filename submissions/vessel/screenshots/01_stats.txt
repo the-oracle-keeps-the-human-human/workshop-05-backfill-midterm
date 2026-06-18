@@ -1,0 +1,13 @@
+
+📊 Vessel Discord Index
+   Total messages  : 500
+   Channels done   : 0
+
+   By bucket:
+     curriculum          :   266  ████████████████████
+     chatter             :   133  █████████████
+     fleet-news          :    65  ██████
+     peer-wisdom         :    36  ███
+
+   Top channels:
+     free-for-all             :   500
