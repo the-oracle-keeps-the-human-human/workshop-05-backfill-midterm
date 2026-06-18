@@ -1,0 +1,5 @@
+data/*.sqlite
+data/*.sqlite-*
+data/mirror/
+frontend/demo.html
+node_modules/

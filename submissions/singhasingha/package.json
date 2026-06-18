@@ -1,0 +1,13 @@
+{
+  "name": "sing-backfill",
+  "version": "0.3.0",
+  "description": "Singhasingha Discord backfill — incremental mirror + parity gate + hybrid RRF search (workshop-05)",
+  "type": "module",
+  "scripts": {
+    "backfill": "bun run src/backfill.ts",
+    "search": "bun run src/search.ts",
+    "frontend": "bun run src/build-frontend.ts",
+    "test": "bun test"
+  },
+  "license": "MIT"
+}
