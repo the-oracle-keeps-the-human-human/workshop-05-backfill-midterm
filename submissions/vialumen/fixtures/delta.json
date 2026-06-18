@@ -1,0 +1,17 @@
+{
+  "channels": [
+    {"id": "1500000000000000001", "name": "general", "type": "text", "parent_id": null, "kind": "room", "state": "active"},
+    {"id": "1500000000000000002", "name": "design-chat", "type": "thread", "parent_id": "1500000000000000001", "kind": "thread", "state": "active"}
+  ],
+  "messages": [
+    {"id": "1500000000000010001", "channel_id": "1500000000000000001", "author_id": "a1", "author_name": "alice", "content": "we should mirror all rooms and threads from discord"},
+    {"id": "1500000000000010003", "channel_id": "1500000000000000001", "author_id": "a1", "author_name": "alice", "content": "use sqlite as the single source of truth, with FTS5 and a vector backend", "edited_ts": "2026-06-19T06:10:00+00:00"},
+    {"id": "1500000000000010004", "channel_id": "1500000000000000001", "author_id": "a4", "author_name": "dave", "content": "backfill cold history first then keep an incremental tail"},
+    {"id": "1500000000000010010", "channel_id": "1500000000000000001", "author_id": "a5", "author_name": "eve", "content": "compute real embeddings with nomic-embed-text for semantic search"},
+    {"id": "1500000000000020001", "channel_id": "1500000000000000002", "author_id": "a3", "author_name": "carol", "content": "hybrid search beats pure vector for exact CLI names and ids", "thread_id": "1500000000000000002"},
+    {"id": "1500000000000020002", "channel_id": "1500000000000000002", "author_id": "a2", "author_name": "bob", "content": "add a parity check before building the frontend", "thread_id": "1500000000000000002"}
+  ],
+  "delete_events": [
+    {"id": "1500000000000010002", "channel_id": "1500000000000000001"}
+  ]
+}
