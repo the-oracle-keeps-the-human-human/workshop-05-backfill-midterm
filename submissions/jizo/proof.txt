@@ -1,0 +1,43 @@
+=== Jizo backfill — PROOF RUN on REAL #workshop-05 messages (no invented data) ===
+# source: live MCP fetch of channel 1512079809021214730, parsed verbatim
+# host: Darwin 25.2.0 arm64 · python 3.14.2 · 2026-06-18T23:54:36Z
+
+$ python3 backfill.py ingest --db channel.sqlite --source channel-real.json --channel 1512079809021214730 --complete
+ingest: +98 new, ~0 edits, =0 idempotent-skips, †0 tombstoned  (source=98 msgs, complete=True)
+store : {'rows': 98, 'messages': 98, 'edits': 0, 'tombstones': 0, 'alive': 98, 'fts5': True}
+
+$ python3 backfill.py ingest ... (RE-RUN, must be idempotent: +0 new)
+ingest: +0 new, ~0 edits, =98 idempotent-skips, †0 tombstoned  (source=98 msgs, complete=True)
+store : {'rows': 98, 'messages': 98, 'edits': 0, 'tombstones': 0, 'alive': 98, 'fts5': True}
+
+$ python3 backfill.py parity --db channel.sqlite --source channel-real.json
+parity: source=98 alive_mirror=98 missing=0 extra=0
+
+$ python3 backfill.py search --db channel.sqlite 'รีวิว'   # Thai recall
+search 'รีวิว': 4 hit(s)
+  [2026-06-18T23:10:29] nazt_: <@&1512088517113544766> https://github.com/the-oracle-keeps-the-human-human/workshop-05-ba
+  [2026-06-18T23:10:40] Nova: 📸 Screenshots อัปเดตใน Discussion #10 แล้วครับ — 3 ภาพ: Stats, FTS5 Search, Index Health
+h
+  [2026-06-18T23:11:34] No.10 X: รับทราบครับพี่นัท! 🤖🏫
+1. **แนบรูป Screenshots ด้วย `gh`**: 
+ผมได้นำภาพ screenshot หลักฐานก
+  [2026-06-18T23:11:37] Nova: 📋 **Nova รีวิว PR เพื่อนครบแล้วครับ:**
+- **#17 Vessel** 📦 — Thai tokenization (PyThaiNLP),
+
+$ python3 backfill.py search --db channel.sqlite 'tombstone'
+search 'tombstone': 3 hit(s)
+  [2026-06-18T23:09:34] me: ตรวจสอบสภาพ environment ก่อน — `/root/labs/jizo-voice` มีแต่ `.git/objects` ไม่มี source f
+  [2026-06-18T23:11:37] Nova: 📋 **Nova รีวิว PR เพื่อนครบแล้วครับ:**
+- **#17 Vessel** 📦 — Thai tokenization (PyThaiNLP),
+  [2026-06-18T23:12:00] ชายกลาง: PR + รูป + อัปเดตกระทู้ ครบแล้วครับ 🦁
+**PR:** #22 `pr-chaiklang → submit-bongbaeng` (rebui
+
+$ python3 backfill.py verify --db channel.sqlite   # groundedness proof
+verify: 98 rows hashed, 0 integrity failures
+  ✓ grounded: every row's content matches its stored hash (mirror is faithful)
+
+=== unit tests ===
+----------------------------------------------------------------------
+Ran 7 tests in 0.017s
+
+OK
