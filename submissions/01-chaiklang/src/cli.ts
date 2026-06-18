@@ -1,5 +1,7 @@
 // cli.ts — maw-style entry. Standalone: `bun src/cli.ts <cmd>`.
-//   ingest <snapshot.json> [--source=backfill|live|reconcile] [--full]
+//   ingest <snapshot.json> [--source=backfill|live|reconcile] [--complete]
+//     --complete = msgs are the channel's FULL history (enables tombstone of absent ids).
+//     Omit it for partial/incremental fetches, or absent messages get falsely tombstoned.
 //   search <query> [--mode=fts|vector|hybrid] [--limit=N]
 //   index            (re)build FTS5 + vectors + topics
 //   frontend [out]   build static HTML dashboard
@@ -19,7 +21,7 @@ function ingest(file: string) {
   const snap = JSON.parse(readFileSync(file, "utf8")) as Snapshot;
   const source = (arg("source", "backfill") as Source);
   const runId = `${source}-${file}`;
-  const st = ingestSnapshot(db, snap, { source, runId, fullSnapshot: process.argv.includes("--full") });
+  const st = ingestSnapshot(db, snap, { source, runId, completeChannelSnapshot: process.argv.includes("--complete") });
   let allOk = true;
   for (const ch of snap.channels) { const p = deltaParity(db, ch); if (!p.ok) { allOk = false; console.log(`✗ parity ${ch.name}: missing ${p.missing.length}`); } }
   console.log(`ingest[${source}] +${st.inserted} ~${st.edited} =${st.unchanged} †${st.deleted} · parity ${allOk ? "OK ✅" : "FAIL ✗"}`);

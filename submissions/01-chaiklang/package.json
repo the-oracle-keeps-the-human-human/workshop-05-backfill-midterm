@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "demo": "bun src/cli.ts ingest fixtures/run1.json --source=backfill --full && bun src/cli.ts ingest fixtures/run2.json --source=reconcile --full && bun src/cli.ts index && bun src/cli.ts status && bun src/cli.ts frontend dist/index.html"
+    "demo": "bun src/cli.ts ingest fixtures/run1.json --source=backfill --complete && bun src/cli.ts ingest fixtures/run2.json --source=reconcile --complete && bun src/cli.ts index && bun src/cli.ts status && bun src/cli.ts frontend dist/index.html"
   },
   "license": "MIT",
   "author": "ChaiKlang Oracle (ชายกลาง)"

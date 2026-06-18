@@ -28,11 +28,13 @@ const older = (a?: string, b?: string) => !b ? !!a : !a ? false : big(a) < big(b
 
 export type IngestStats = { inserted: number; edited: number; unchanged: number; deleted: number };
 
-// Upsert one channel's messages. If `fullSnapshot`, ids present in DB for this channel but
-// absent from `msgs` are tombstoned (a complete re-fetch reveals deletions).
+// Upsert one channel's messages. If `completeChannelSnapshot`, ids present in DB for this
+// channel but absent from `msgs` are tombstoned — so this flag is a CONTRACT: only pass it
+// when `msgs` is the channel's COMPLETE history. On a partial/limited fetch (e.g. last 200)
+// it would falsely tombstone everything outside the page, so leave it off for incremental.
 export function ingestChannel(
   db: Database, guildId: string, ch: Channel, msgs: RawMsg[],
-  opts: { source: Source; runId: string; fullSnapshot?: boolean }
+  opts: { source: Source; runId: string; completeChannelSnapshot?: boolean; guildName?: string }
 ): IngestStats {
   const roomId = ch.kind === "thread" ? (ch.parent_id || ch.id) : ch.id;
   const threadId = ch.kind === "thread" ? ch.id : null;
@@ -72,19 +74,19 @@ export function ingestChannel(
         st.unchanged++;
       }
     }
-    if (opts.fullSnapshot) {
+    if (opts.completeChannelSnapshot) {
       const dbIds = db.query("SELECT id FROM messages WHERE channel_id=? AND deleted_at IS NULL").all(channelId) as any[];
       for (const r of dbIds) if (!present.has(r.id)) { tomb.run(now, r.id); st.deleted++; }
     }
-    upsertChannelMeta(db, guildId, ch, roomId, threadId);
+    upsertChannelMeta(db, guildId, opts.guildName ?? guildId, ch, roomId, threadId);
     updateCursor(db, channelId, oldest, newest);
   });
   tx();
   return st;
 }
 
-function upsertChannelMeta(db: Database, guildId: string, ch: Channel, roomId: string, threadId: string | null) {
-  db.prepare("INSERT OR REPLACE INTO guilds (id,name,raw_json) VALUES (?,?,?)").run(guildId, guildId, "{}");
+function upsertChannelMeta(db: Database, guildId: string, guildName: string, ch: Channel, roomId: string, threadId: string | null) {
+  db.prepare("INSERT OR REPLACE INTO guilds (id,name,raw_json) VALUES (?,?,?)").run(guildId, guildName, "{}");
   if (threadId) {
     db.prepare("INSERT OR IGNORE INTO rooms (id,guild_id,name,position,type,raw_json) VALUES (?,?,?,?,?,?)")
       .run(roomId, guildId, ch.parent_id ? `room:${ch.parent_id}` : roomId, ch.position ?? null, ch.type ?? null, "{}");
@@ -111,10 +113,10 @@ export function updateCursor(db: Database, channelId: string, oldest?: string, n
     .run(o ?? null, n ?? null, now, channelId);
 }
 
-export function ingestSnapshot(db: Database, snap: Snapshot, opts: { source: Source; runId: string; fullSnapshot?: boolean }) {
+export function ingestSnapshot(db: Database, snap: Snapshot, opts: { source: Source; runId: string; completeChannelSnapshot?: boolean }) {
   const totals: IngestStats = { inserted: 0, edited: 0, unchanged: 0, deleted: 0 };
   for (const ch of snap.channels) {
-    const s = ingestChannel(db, snap.guild.id, ch, ch.messages, opts);
+    const s = ingestChannel(db, snap.guild.id, ch, ch.messages, { ...opts, guildName: snap.guild.name });
     totals.inserted += s.inserted; totals.edited += s.edited; totals.unchanged += s.unchanged; totals.deleted += s.deleted;
   }
   return totals;

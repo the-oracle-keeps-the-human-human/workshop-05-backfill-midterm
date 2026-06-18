@@ -14,7 +14,7 @@ const freshDb = () => openDb(join(tmpdir(), `ck-test-${process.pid}-${dbN++}.sql
 
 test("backfill ingests every message + delta parity passes", () => {
   const db = freshDb();
-  const st = ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", fullSnapshot: true });
+  const st = ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", completeChannelSnapshot: true });
   expect(st.inserted).toBe(5);
   for (const ch of RUN1.channels) expect(deltaParity(db, ch).ok).toBe(true);
   expect((db.query("SELECT count(*) c FROM messages").get() as any).c).toBe(5);
@@ -31,8 +31,8 @@ test("re-ingest is idempotent (no dupes, all unchanged)", () => {
 
 test("incremental run2: insert new, edit keeps history, delete tombstones (Nothing is Deleted)", () => {
   const db = freshDb();
-  ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", fullSnapshot: true });
-  const st = ingestSnapshot(db, RUN2, { source: "reconcile", runId: "r2", fullSnapshot: true });
+  ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", completeChannelSnapshot: true });
+  const st = ingestSnapshot(db, RUN2, { source: "reconcile", runId: "r2", completeChannelSnapshot: true });
   expect(st.inserted).toBe(2);   // 1004 + 2003
   expect(st.edited).toBe(1);     // 1002 changed
   expect(st.deleted).toBe(1);    // 1003 removed → tombstone
@@ -63,8 +63,8 @@ test("two-headed cursor extends outward + resumable", () => {
 
 test("hybrid search (RRF) finds by exact term AND excludes deleted", () => {
   const db = freshDb();
-  ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", fullSnapshot: true });
-  ingestSnapshot(db, RUN2, { source: "reconcile", runId: "r2", fullSnapshot: true });
+  ingestSnapshot(db, RUN1, { source: "backfill", runId: "r1", completeChannelSnapshot: true });
+  ingestSnapshot(db, RUN2, { source: "reconcile", runId: "r2", completeChannelSnapshot: true });
   buildIndex(db);
   const hits = search(db, "reconciler edit-history", "hybrid", 5);
   expect(hits.length).toBeGreaterThan(0);

@@ -10,10 +10,11 @@ bun test                 # 6 tests — ทุก behavior ของ v2 (ออ�
 bun run demo             # ingest run1+run2 → index → status → build frontend
 bun src/cli.ts search "reconciler edit-history" --mode=hybrid
 # real channel (token จาก env เท่านั้น — ไม่ฝังโค้ด):
-DISCORD_BOT_TOKEN=… bun src/fetch-channel.ts <channelId> 200 > real.json
-CK_DB=real.sqlite bun src/cli.ts ingest real.json --source=backfill --full
+DISCORD_BOT_TOKEN=… bun src/fetch-channel.ts <channelId> 5000 > real.json   # ดึงให้ครบห้อง
+CK_DB=real.sqlite bun src/cli.ts ingest real.json --source=backfill --complete
 CK_DB=real.sqlite bun src/cli.ts index && CK_DB=real.sqlite bun src/cli.ts frontend dist/real.html
 ```
+> ⚠️ `--complete` = ยืนยันว่า snapshot คือ **ประวัติทั้งห้องครบ** (เปิด tombstone ของ id ที่หายไป). ถ้าดึงแค่บางส่วน/incremental **อย่าใส่ `--complete`** ไม่งั้นข้อความนอกหน้าที่ดึงจะโดน tombstone ผิด (ขอบคุณ Atom ⚛️ ที่ชี้ guard นี้)
 
 ## สถาปัตยกรรม
 ```
