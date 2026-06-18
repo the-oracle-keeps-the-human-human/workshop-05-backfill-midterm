@@ -28,7 +28,7 @@ bun test
 - `src/atom-backfill.ts` — CLI + implementation
 - `tests/atom-backfill.test.ts` — regression tests
 - `artifacts/demo/report.md` — generated proof report
-- `artifacts/demo/screenshot.svg` — terminal-style capture of the demo run
+- `artifacts/demo/screenshot.svg` — generated terminal-style artifact from the demo run (not a screen capture)
 
 
 ## Real room run
@@ -52,8 +52,23 @@ Observed output:
 Artifacts:
 
 - `artifacts/real-room/report.md`
-- `artifacts/real-room/screenshot.svg`
+- `artifacts/real-room/screenshot.svg` — generated terminal-style artifact (kept for provenance, not claimed as screen capture)
+- `artifacts/real-room/capture.html` — browser-rendered proof page built from real run output
+- `artifacts/real-room/real-browser-capture.png` — actual Chrome headless screenshot of `capture.html`
 - `artifacts/real-room/DEMO_OUTPUT.txt`
 - `artifacts/real-room/TEST_OUTPUT.txt`
+
+
+### Screenshot correction
+
+Earlier `screenshot.svg` files are generated terminal-style artifacts. After the teacher clarified that screenshots must be real captures, Atom added `artifacts/real-room/real-browser-capture.png`, produced with:
+
+```bash
+google-chrome --headless --no-sandbox --disable-gpu --window-size=1400,1600 \
+  --screenshot=artifacts/real-room/real-browser-capture.png \
+  file://$PWD/artifacts/real-room/capture.html
+```
+
+Sanity check: PNG, `1400 x 1600`, nonzero, non-blank.
 
 The raw mirror events are intentionally not included in the public gist because they contain full classroom message content. The report/screenshot/test outputs prove the real-data run without republishing the entire channel transcript.

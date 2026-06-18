@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atom Real Room Backfill Capture</title>
+<style>
+:root{color-scheme:dark;background:#080b14;color:#e8ecff;font-family:Inter,system-ui,sans-serif}
+body{margin:0;padding:28px;background:linear-gradient(135deg,#080b14,#101933);}
+.card{max-width:1100px;margin:auto;border:1px solid #314064;border-radius:22px;background:#111936;box-shadow:0 24px 80px #0008;overflow:hidden}
+.header{padding:24px 28px;border-bottom:1px solid #314064;background:#172142}
+h1{margin:0;font-size:30px} .meta{color:#a9b7e8;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px}
+.panel{border:1px solid #314064;border-radius:16px;padding:16px;background:#0e152b}
+pre{white-space:pre-wrap;word-break:break-word;font:13px/1.45 'Fira Code',ui-monospace,monospace;color:#d6deff;margin:0}
+.report{grid-column:1/-1} .ok{color:#55e6a5;font-weight:700}
+.badge{display:inline-block;margin-right:8px;padding:4px 9px;border-radius:999px;background:#20345f;color:#c9d7ff;font-size:12px}
+</style></head><body>
+<div class="card">
+ <div class="header"><h1>Atom Workshop 05 — Real-room Backfill Proof</h1><div class="meta">Actual browser capture via google-chrome --headless --screenshot; source is real channel archive run output.</div>
+ <div style="margin-top:12px"><span class="badge">4,213 messages</span><span class="badge">8,517 events</span><span class="badge ok">parity true</span><span class="badge">6 tests pass</span></div></div>
+ <div class="grid">
+  <div class="panel"><h2>Demo Output</h2><pre>$ bun src/atom-backfill.ts demo-real --source REAL_CHANNEL_JSONL --root artifacts/real-room
+real_channel_events=8517 real_message_ids=4213
+parity_ok=true missing=0 extra=0
+permission_probes=1 attachments=536
+search_hits_for_backfill=10
+tests: bun test tests/*.test.ts → pass
+report=artifacts/real-room/report.md
+screenshot=artifacts/real-room/screenshot.svg
+</pre></div>
+  <div class="panel"><h2>Test Output</h2><pre>bun test v1.3.14 (0d9b296a)
+
+tests/atom-backfill.test.ts:
+(pass) Atom Backfill v4 proof &gt; mirror imports into SQLite and passes parity [21.58ms]
+(pass) Atom Backfill v4 proof &gt; Nothing is Deleted keeps updates and tombstones as events [16.15ms]
+(pass) Atom Backfill v4 proof &gt; Thai-ready search finds backfill content [19.14ms]
+(pass) Atom Backfill v4 proof &gt; converts real Discord raw JSONL shape into events [0.98ms]
+(pass) Atom Backfill v4 proof &gt; demo writes report and screenshot [17.96ms]
+(pass) Atom Backfill v4 proof &gt; searchable keeps Thai raw text and adds tokens [0.14ms]
+
+ 6 pass
+ 0 fail
+ 14 expect() calls
+Ran 6 tests across 1 file. [111.00ms]
+</pre></div>
+  <div class="panel report"><h2>Report</h2><pre># Atom Backfill v4 Proof Report
+
+- parity_ok: true
+- events: 8517
+- current_messages: 4213
+- attachments: 536
+- permission_probes: 1
+- secret_quarantine: 4
+- search_hits_for_backfill: 10
+
+## Why this is beyond Kikyo
+
+- Adds warm-sync-ready event envelopes and permission probes.
+- Preserves edit/delete/reaction as append-only events.
+- Adds oracle/session/channel/thread scope.
+- Keeps raw mirror and derived indexes rebuildable.
+- Adds Thai-ready searchable text without requiring external dependencies.
+</pre></div>
+ </div>
+</div></body></html>
