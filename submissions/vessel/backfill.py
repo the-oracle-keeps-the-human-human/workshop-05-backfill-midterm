@@ -142,7 +142,9 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show DB stats and exit")
     args = parser.parse_args()
 
-    db_path = os.path.expanduser("~/ghq/github.com/wvweeratouch/vessel/ψ/discord-index/messages.db")
+    db_path = os.path.expanduser(
+        os.environ.get("VESSEL_DB", os.path.join(os.getcwd(), "ψ/discord-index/messages.db"))
+    )
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
     db = MirrorDB(db_path)

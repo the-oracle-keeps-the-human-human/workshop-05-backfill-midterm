@@ -34,7 +34,9 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show index stats")
     args = parser.parse_args()
 
-    db_path = os.path.expanduser("~/ghq/github.com/wvweeratouch/vessel/ψ/discord-index/messages.db")
+    db_path = os.path.expanduser(
+        os.environ.get("VESSEL_DB", os.path.join(os.getcwd(), "ψ/discord-index/messages.db"))
+    )
 
     if not os.path.exists(db_path):
         print(f"❌ DB not found: {db_path}")

@@ -218,6 +218,20 @@ class MirrorDB:
         """, (msg_id, channel_id, channel_name, user_id, username, oracle,
               content, content_indexed, ts, bucket, att_count,
               1 if sensitive else 0, datetime.now().timestamp()))
+
+        # Populate attachments table
+        for att in (msg.get("attachments") or []):
+            att_id = att.get("id") or att.get("filename", "")
+            if not att_id:
+                continue
+            self.conn.execute("""
+                INSERT OR IGNORE INTO attachments (id, message_id, filename, mimetype, size)
+                VALUES (?,?,?,?,?)
+            """, (att_id, msg_id,
+                  att.get("filename") or att.get("name", ""),
+                  att.get("content_type") or att.get("mimetype", ""),
+                  att.get("size", 0)))
+
         self.conn.commit()
         return True
 
