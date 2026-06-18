@@ -1,0 +1,8 @@
+$ bun src/atom-backfill.ts demo --root artifacts/demo
+mirror events=6 message_ids=3
+parity_ok=true missing=0 extra=0
+permission_probes=1 attachments=1
+search_hits_for_backfill=1
+tests: bun test tests/*.test.ts → expected pass
+report=artifacts/demo/report.md
+screenshot=artifacts/demo/screenshot.svg

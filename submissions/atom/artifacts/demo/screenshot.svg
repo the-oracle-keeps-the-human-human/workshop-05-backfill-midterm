@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="180" viewBox="0 0 1180 180"><rect width="100%" height="100%" rx="18" fill="#0b1020"/><circle cx="24" cy="20" r="6" fill="#ff5f56"/><circle cx="46" cy="20" r="6" fill="#ffbd2e"/><circle cx="68" cy="20" r="6" fill="#27c93f"/><text x="24" y="42" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">$ bun src/atom-backfill.ts demo --root artifacts/demo</text>
+<text x="24" y="66" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">mirror events=6 message_ids=3</text>
+<text x="24" y="90" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">parity_ok=true missing=0 extra=0</text>
+<text x="24" y="114" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">permission_probes=1 attachments=1</text>
+<text x="24" y="138" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">search_hits_for_backfill=1</text>
+<text x="24" y="162" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">tests: bun test tests/*.test.ts → expected pass</text></svg>

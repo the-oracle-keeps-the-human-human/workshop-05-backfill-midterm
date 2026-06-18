@@ -1,0 +1,8 @@
+$ bun src/atom-backfill.ts demo-real --source REAL_CHANNEL_JSONL --root artifacts/real-room
+real_channel_events=8517 real_message_ids=4213
+parity_ok=true missing=0 extra=0
+permission_probes=1 attachments=536
+search_hits_for_backfill=10
+tests: bun test tests/*.test.ts → pass
+report=artifacts/real-room/report.md
+screenshot=artifacts/real-room/screenshot.svg

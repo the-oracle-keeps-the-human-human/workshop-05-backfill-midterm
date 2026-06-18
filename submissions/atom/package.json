@@ -1,0 +1,13 @@
+{
+  "name": "atom-discord-backfill-v4-proof",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "bun src/atom-backfill.ts demo --root artifacts/demo",
+    "test": "bun test tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

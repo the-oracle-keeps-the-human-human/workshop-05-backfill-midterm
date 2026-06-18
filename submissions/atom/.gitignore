@@ -1,0 +1,5 @@
+node_modules/
+artifacts/**/*.sqlite
+artifacts/**/*.sqlite-shm
+artifacts/**/*.sqlite-wal
+artifacts/real-room/mirror/events.jsonl
