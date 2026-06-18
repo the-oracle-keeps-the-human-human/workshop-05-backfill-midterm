@@ -13,6 +13,14 @@ import { Database } from "bun:sqlite";
 
 export type Op = "create" | "edit" | "delete";
 
+// secret guard ก่อน index (Vessel review): กัน token/key หลุดเข้า store/FTS (โดยเฉพาะ public)
+const SECRET_RE = /\b(ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16})\b/g;
+export function redactSecrets(s: string): { text: string; redacted: number } {
+  let redacted = 0;
+  const text = (s ?? "").replace(SECRET_RE, () => { redacted++; return "[REDACTED]"; });
+  return { text, redacted };
+}
+
 export interface MsgInput {
   id: string;
   channelId: string;
@@ -96,6 +104,7 @@ function reindexFts(db: Database, id: string, author: string, content: string): 
 export function upsertMessage(db: Database, m: MsgInput): UpsertResult {
   const now = new Date().toISOString();
   const ts = snowflakeTs(m.id); // created เสมอจาก snowflake (แม่นกว่า field)
+  m = { ...m, content: redactSecrets(m.content).text }; // secret guard ก่อนเก็บ/index (Vessel review)
   const head = db.prepare(`SELECT content, version, deleted FROM messages WHERE id=?`).get(m.id) as
     | { content: string; version: number; deleted: number }
     | null;
@@ -140,6 +149,24 @@ export function tombstoneMessage(db: Database, id: string): UpsertResult {
   ).run(id, v, "delete", null, null, now);
   db.prepare(`DELETE FROM messages_fts WHERE message_id=?`).run(id); // ไม่โผล่ search แต่ row + history คงอยู่
   return { op: "delete", version: v };
+}
+
+// reconcile-tombstone guard (regression): tombstone ปลอดภัยเฉพาะตอน FULL SCAN (เดินทั้งห้องในรอบเดียว)
+//   resume-from-cursor แล้ว fetch 0 → complete=true แต่ seen ว่าง → ห้าม tombstone (จะลบทั้งห้อง)
+export function shouldReconcileTombstones(fullScan: boolean, complete: boolean): boolean {
+  return fullScan && complete;
+}
+
+// ── resumable cursor (Atom/ChaiKlang review: persist จริง ไม่ใช่ in-memory) ──
+export function getCursor(db: Database, channelId: string, direction: "backfill" | "live"): string | null {
+  const r = db.prepare(`SELECT edge_id FROM cursor WHERE channel_id=? AND direction=?`).get(channelId, direction) as { edge_id: string } | null;
+  return r?.edge_id ?? null;
+}
+export function setCursor(db: Database, channelId: string, direction: "backfill" | "live", edgeId: string, addTotal: number): void {
+  db.prepare(
+    `INSERT INTO cursor (channel_id,direction,edge_id,total,updated_at) VALUES (?,?,?,?,?)
+     ON CONFLICT(channel_id,direction) DO UPDATE SET edge_id=excluded.edge_id, total=total+excluded.total, updated_at=excluded.updated_at`,
+  ).run(channelId, direction, edgeId, addTotal, new Date().toISOString());
 }
 
 export interface SearchHit { id: string; author: string; ts: string; content: string; rank: number }

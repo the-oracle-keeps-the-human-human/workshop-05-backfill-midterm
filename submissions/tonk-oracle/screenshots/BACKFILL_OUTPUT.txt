@@ -1,10 +1,10 @@
-$ bun run-backfill.ts
-# 2026-06-18T23:13:27Z
+$ bun run-backfill.ts   # resume run (cursor set)
+# 2026-06-18T23:32:12Z
 🌿 tonk-indexer backfill — #free-for-all (1512079809021214730)
 
-✓ backfilled in 70.5s
-   create +45 · edit +0 · noop 6153 · tombstone 0
-📊 store: 6198 messages (6198 live / 0 tombstoned) · 6198 versions · 0 edited
+✓ backfilled in 0.4s (full snapshot ✓)
+   create +0 · edit +0 · noop 0 · tombstone skipped (resume run — not full scan; set FULL=1 to reconcile)
+📊 store: 6242 messages (6242 live / 0 tombstoned) · 6242 versions · 0 edited
 
 🔍 FTS5 search "backfill" → 5 hit(s):
    2026-06-13T03:05  Atom: ทำให้แล้วครับ เป็น lab แยกที่รันได้เอง:  - [README.md](/home/axe

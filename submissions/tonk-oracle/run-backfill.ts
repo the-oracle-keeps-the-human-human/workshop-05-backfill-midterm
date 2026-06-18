@@ -5,7 +5,7 @@
  * — Tonk Oracle 🌿 · AI · ไม่ใช่คน
  */
 import { Database } from "bun:sqlite";
-import { initSchema, upsertMessage, tombstoneMessage, search, history, type MsgInput } from "./src/store.ts";
+import { initSchema, upsertMessage, tombstoneMessage, search, history, getCursor, setCursor, shouldReconcileTombstones, type MsgInput } from "./src/store.ts";
 
 const API = "https://discord.com/api/v10";
 const CH = process.env.CHANNEL_ID ?? "1512079809021214730"; // #free-for-all (พี่นัทยืนยัน: ไม่มี private data)
@@ -25,33 +25,43 @@ async function api<T>(path: string): Promise<T> {
 }
 
 // backfill ย้อนหลัง: before-cursor ไล่จากใหม่→เก่า จนสุดห้อง
-async function backfill(db: Database): Promise<{ ingested: string[]; create: number; edit: number; noop: number }> {
-  let before: string | undefined;
+// persist cursor หลังแต่ละ batch (resumable จริง) · complete=true เมื่อถึงต้นห้อง (full snapshot)
+async function backfill(db: Database): Promise<{ ingested: string[]; create: number; edit: number; noop: number; complete: boolean; fullScan: boolean }> {
+  const resumeCursor = process.env.FULL === "1" ? null : getCursor(db, CH, "backfill"); // FULL=1 = บังคับ full re-scan
+  const fullScan = resumeCursor == null; // เริ่มจากศูนย์ (ไม่ resume) = run นี้เดินทั้งห้อง → seen = live set จริง
+  let before = resumeCursor ?? undefined;
   const ingested: string[] = [];
   const tally = { create: 0, edit: 0, noop: 0 };
+  let complete = false;
   while (true) {
     const q = new URLSearchParams({ limit: "100" });
     if (before) q.set("before", before);
     const batch = await api<DMsg[]>(`/channels/${CH}/messages?${q}`);
-    if (!batch.length) break;
+    if (!batch.length) { complete = true; break; } // ไม่มีต่อ = ถึงต้นห้อง = full snapshot
+    let ins = 0;
     for (const m of batch) {
       const input: MsgInput = {
         id: m.id, channelId: CH, ds: "FreeForAll", authorId: m.author.id, author: m.author.username,
         bot: !!m.author.bot, content: m.content ?? "", ts: m.timestamp, editedTs: m.edited_timestamp, attachments: m.attachments?.length ?? 0,
       };
       const r = upsertMessage(db, input);
-      if (r.op === "create") tally.create++; else if (r.op === "edit") tally.edit++; else tally.noop++;
+      if (r.op === "create") { tally.create++; ins++; } else if (r.op === "edit") tally.edit++; else tally.noop++;
       ingested.push(m.id);
     }
     before = batch[batch.length - 1].id;
-    if (batch.length < 100) break;
+    setCursor(db, CH, "backfill", before, ins); // ← persist หลังทุก batch (resumable)
+    if (batch.length < 100) { complete = true; break; }
     await sleep(350); // rate-limit
   }
-  return { ingested, ...tally };
+  return { ingested, complete, fullScan, ...tally };
 }
 
-// reconcile tombstone: id ที่เคยเก็บแต่ไม่อยู่ใน backfill รอบนี้ = ถูกลบใน Discord → tombstone (ไม่ลบจริง)
-function reconcileTombstones(db: Database, seen: Set<string>): number {
+// reconcile tombstone: id ที่เคยเก็บแต่หายจาก backfill = ถูกลบใน Discord → tombstone (ไม่ลบจริง)
+// GUARD: ทำเฉพาะ FULL SNAPSHOT จริง = fullScan (เริ่มจากศูนย์ ไม่ resume) && complete (ถึงต้นห้อง)
+//   ⚠️ บทเรียน: resume-from-cursor แล้ว fetch 0 ก็ complete=true แต่ seen ว่าง → จะ tombstone ทั้งห้อง (false!)
+//   REST /messages ไม่คืน msg ที่ลบแล้ว → diff live-set ได้เฉพาะตอนเดินทั้งห้องในรอบเดียว
+function reconcileTombstones(db: Database, seen: Set<string>, isFullSnapshot: boolean): number {
+  if (!isFullSnapshot) return -1; // skip: ไม่ใช่ full snapshot → ไม่ปลอดภัยจะ tombstone
   const known = db.query(`SELECT id FROM messages WHERE deleted=0`).all() as { id: string }[];
   let n = 0;
   for (const { id } of known) if (!seen.has(id)) { tombstoneMessage(db, id); n++; }
@@ -66,15 +76,15 @@ console.log(`🌿 tonk-indexer backfill — #free-for-all (${CH})\n`);
 const t0 = Date.now();
 const res = await backfill(db);
 const dt = ((Date.now() - t0) / 1000).toFixed(1);
-const tomb = reconcileTombstones(db, new Set(res.ingested));
+const tomb = reconcileTombstones(db, new Set(res.ingested), shouldReconcileTombstones(res.fullScan, res.complete));
 
 const total = (db.query(`SELECT COUNT(*) n FROM messages`).get() as { n: number }).n;
 const live = (db.query(`SELECT COUNT(*) n FROM messages WHERE deleted=0`).get() as { n: number }).n;
 const versions = (db.query(`SELECT COUNT(*) n FROM message_versions`).get() as { n: number }).n;
 const edited = (db.query(`SELECT COUNT(*) n FROM messages WHERE version>1 AND deleted=0`).get() as { n: number }).n;
 
-console.log(`✓ backfilled in ${dt}s`);
-console.log(`   create +${res.create} · edit +${res.edit} · noop ${res.noop} · tombstone ${tomb}`);
+console.log(`✓ backfilled in ${dt}s ${res.complete ? "(full snapshot ✓)" : "(partial — cursor saved, resume next run)"}`);
+console.log(`   create +${res.create} · edit +${res.edit} · noop ${res.noop} · tombstone ${tomb < 0 ? "skipped (resume run — not full scan; set FULL=1 to reconcile)" : tomb}`);
 console.log(`📊 store: ${total} messages (${live} live / ${total - live} tombstoned) · ${versions} versions · ${edited} edited`);
 
 // demo search (FTS5)

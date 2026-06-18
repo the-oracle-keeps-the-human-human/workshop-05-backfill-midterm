@@ -5,7 +5,7 @@
  */
 import { test, expect } from "bun:test";
 import { Database } from "bun:sqlite";
-import { initSchema, upsertMessage, tombstoneMessage, search, history, snowflakeTs, type MsgInput } from "../src/store.ts";
+import { initSchema, upsertMessage, tombstoneMessage, search, history, snowflakeTs, redactSecrets, getCursor, setCursor, shouldReconcileTombstones, type MsgInput } from "../src/store.ts";
 
 function freshDb(): Database {
   const db = new Database(":memory:");
@@ -75,6 +75,32 @@ test("edit แล้ว delete: เก็บครบทุก revision (create�
   upsertMessage(db, { ...base, content: "v2" });
   tombstoneMessage(db, base.id);
   expect(history(db, base.id).map((h) => `${h.version}:${h.op}`)).toEqual(["1:create", "2:edit", "3:delete"]);
+});
+
+test("secret guard (Vessel review): redact token/key ก่อนเก็บ + ไม่โผล่ search", () => {
+  const db = freshDb();
+  upsertMessage(db, { ...base, id: "999", content: "my token is ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ok" });
+  const head = db.query(`SELECT content FROM messages WHERE id=?`).get("999") as any;
+  expect(head.content).toContain("[REDACTED]");
+  expect(head.content).not.toContain("ghp_ABCDEFG");
+  expect(redactSecrets("sk-abcdefghijklmnopqrstuvwxyz").redacted).toBe(1);
+});
+
+test("cursor persist (Atom/ChaiKlang review): resumable per channel+direction", () => {
+  const db = freshDb();
+  expect(getCursor(db, "C1", "backfill")).toBeNull();
+  setCursor(db, "C1", "backfill", "edge100", 50);
+  setCursor(db, "C1", "backfill", "edge200", 30);
+  expect(getCursor(db, "C1", "backfill")).toBe("edge200");
+  const tot = db.query(`SELECT total FROM cursor WHERE channel_id='C1' AND direction='backfill'`).get() as any;
+  expect(tot.total).toBe(80); // สะสมข้าม batch
+});
+
+test("tombstone reconcile guard (regression): เฉพาะ full scan — กัน resume ลบทั้งห้อง", () => {
+  // bug ที่เจอ: resume-from-cursor → fetch 0 → complete=true แต่ seen ว่าง → จะ tombstone ทั้งห้อง
+  expect(shouldReconcileTombstones(true, true)).toBe(true);    // full scan + ถึงต้นห้อง → OK
+  expect(shouldReconcileTombstones(false, true)).toBe(false);  // resume run → ห้าม (data-safe)
+  expect(shouldReconcileTombstones(true, false)).toBe(false);  // ค้างกลางคัน → ห้าม
 });
 
 test("snowflake → created timestamp (id ฝัง ts ที่ >>22)", () => {
