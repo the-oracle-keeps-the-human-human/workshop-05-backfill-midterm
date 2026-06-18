@@ -54,7 +54,7 @@ describe("Atom Backfill v4 proof", () => {
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("demo writes report and screenshot", async () => {
+  test("demo writes report and summary card", async () => {
     const root = mkdtempSync(join(tmpdir(), "atom-backfill-"));
     try {
       const r = await demo(root);

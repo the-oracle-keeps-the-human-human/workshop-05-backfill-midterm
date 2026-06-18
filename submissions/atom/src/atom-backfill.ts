@@ -21,7 +21,7 @@ export type RawEvent = {
   raw: Record<string, unknown>;
 };
 
-type Paths = { root: string; mirror: string; db: string; report: string; screenshot: string };
+type Paths = { root: string; mirror: string; db: string; report: string; summaryCard: string };
 
 const TOKEN_PREFIX = String.raw`(?:gh` + String.raw`p_|github` + String.raw`_pat_)`;
 const SECRET_RE = new RegExp(`${TOKEN_PREFIX}|DISCORD_BOT_TOKEN\\s*=\\s*\\S+|CLAUDE_CODE_OAUTH_TOKEN\\s*=\\s*\\S+|password\\s*[:=]\\s*\\S+|secret\\s*[:=]\\s*\\S+|BEGIN (RSA|OPENSSH|PRIVATE)`, "i");
@@ -33,7 +33,7 @@ export function paths(root: string): Paths {
     mirror: join(root, "mirror"),
     db: join(root, "atom-backfill.sqlite"),
     report: join(root, "report.md"),
-    screenshot: join(root, "screenshot.svg"),
+    summaryCard: join(root, "summary-card.svg"),
   };
 }
 
@@ -256,12 +256,12 @@ export function writeReport(root: string) {
   return { counts, pcheck, hits };
 }
 
-export function writeScreenshot(root: string, lines: string[]) {
+export function writeSummaryCard(root: string, lines: string[]) {
   const p = paths(root);
   const width = 1180, height = 36 + lines.length * 24;
   const text = lines.map((l, i) => `<text x="24" y="${42 + i * 24}" fill="#d6deff" font-size="16" font-family="Fira Code, ui-monospace, monospace">${escXml(l)}</text>`).join("\n");
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" rx="18" fill="#0b1020"/><circle cx="24" cy="20" r="6" fill="#ff5f56"/><circle cx="46" cy="20" r="6" fill="#ffbd2e"/><circle cx="68" cy="20" r="6" fill="#27c93f"/>${text}</svg>\n`;
-  writeFileSync(p.screenshot, svg);
+  writeFileSync(p.summaryCard, svg);
 }
 
 export async function demo(root: string) {
@@ -278,7 +278,7 @@ export async function demo(root: string) {
     `search_hits_for_backfill=${report.hits.length}`,
     "tests: bun test tests/*.test.ts → expected pass",
   ];
-  writeScreenshot(root, lines);
+  writeSummaryCard(root, lines);
   return { manifest, report, lines };
 }
 
@@ -298,7 +298,7 @@ export async function demoReal(root: string, source: string) {
     `search_hits_for_backfill=${report.hits.length}`,
     "tests: bun test tests/*.test.ts → pass",
   ];
-  writeScreenshot(root, lines);
+  writeSummaryCard(root, lines);
   return { manifest, report, lines };
 }
 
@@ -316,14 +316,14 @@ if (import.meta.main) {
     const r = await demo(root);
     console.log(r.lines.join("\n"));
     console.log(`report=${paths(root).report}`);
-    console.log(`screenshot=${paths(root).screenshot}`);
+    console.log(`summary_card=${paths(root).summaryCard}`);
   } else if (cmd === "demo-real") {
     const source = argValue(args, "--source", "");
     if (!source) throw new Error("demo-real requires --source RAW_MESSAGES_JSONL");
     const r = await demoReal(root, source);
     console.log(r.lines.join("\n"));
     console.log(`report=${paths(root).report}`);
-    console.log(`screenshot=${paths(root).screenshot}`);
+    console.log(`summary_card=${paths(root).summaryCard}`);
   } else if (cmd === "backfill") console.log(JSON.stringify(writeMirror(root), null, 2));
   else if (cmd === "build-db") buildDb(root);
   else if (cmd === "parity") console.log(JSON.stringify(parity(root), null, 2));

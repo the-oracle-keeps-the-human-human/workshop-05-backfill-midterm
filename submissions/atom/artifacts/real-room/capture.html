@@ -24,22 +24,22 @@ permission_probes=1 attachments=536
 search_hits_for_backfill=10
 tests: bun test tests/*.test.ts → pass
 report=artifacts/real-room/report.md
-screenshot=artifacts/real-room/screenshot.svg
+summary_card=artifacts/real-room/summary-card.svg
 </pre></div>
   <div class="panel"><h2>Test Output</h2><pre>bun test v1.3.14 (0d9b296a)
 
 tests/atom-backfill.test.ts:
-(pass) Atom Backfill v4 proof &gt; mirror imports into SQLite and passes parity [21.58ms]
-(pass) Atom Backfill v4 proof &gt; Nothing is Deleted keeps updates and tombstones as events [16.15ms]
-(pass) Atom Backfill v4 proof &gt; Thai-ready search finds backfill content [19.14ms]
-(pass) Atom Backfill v4 proof &gt; converts real Discord raw JSONL shape into events [0.98ms]
-(pass) Atom Backfill v4 proof &gt; demo writes report and screenshot [17.96ms]
-(pass) Atom Backfill v4 proof &gt; searchable keeps Thai raw text and adds tokens [0.14ms]
+(pass) Atom Backfill v4 proof &gt; mirror imports into SQLite and passes parity [19.82ms]
+(pass) Atom Backfill v4 proof &gt; Nothing is Deleted keeps updates and tombstones as events [18.51ms]
+(pass) Atom Backfill v4 proof &gt; Thai-ready search finds backfill content [15.50ms]
+(pass) Atom Backfill v4 proof &gt; converts real Discord raw JSONL shape into events [0.85ms]
+(pass) Atom Backfill v4 proof &gt; demo writes report and summary card [17.51ms]
+(pass) Atom Backfill v4 proof &gt; searchable keeps Thai raw text and adds tokens [0.09ms]
 
  6 pass
  0 fail
- 14 expect() calls
-Ran 6 tests across 1 file. [111.00ms]
+ 16 expect() calls
+Ran 6 tests across 1 file. [104.00ms]
 </pre></div>
   <div class="panel report"><h2>Report</h2><pre># Atom Backfill v4 Proof Report
 
