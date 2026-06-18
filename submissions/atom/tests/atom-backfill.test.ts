@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { buildDb, demo, eventsFromDiscordRawMessages, parity, sampleEvents, search, searchable, writeMirror } from "../src/atom-backfill";
+import { buildDb, demo, eventsFromDiscordRawMessages, ftsQuery, parity, sampleEvents, search, searchable, writeMirror } from "../src/atom-backfill";
 import { Database } from "bun:sqlite";
 
 describe("Atom Backfill v4 proof", () => {
@@ -40,6 +40,43 @@ describe("Atom Backfill v4 proof", () => {
       buildDb(root);
       const rows = search(root, "backfill ต่อเนื่อง");
       expect(rows.length).toBeGreaterThan(0);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("FTS query escapes punctuation instead of treating it as syntax", () => {
+    expect(ftsQuery("codex:backfill edit-history")).toBe('"codex" OR "backfill" OR "edit" OR "history"');
+    const root = mkdtempSync(join(tmpdir(), "atom-backfill-"));
+    try {
+      writeMirror(root, [
+        ...sampleEvents(),
+        {
+          id: "evt-punctuation",
+          type: "message_create",
+          guild_id: "guild-school",
+          channel_id: "backfill-midterm",
+          message_id: "1005",
+          author_id: "atom",
+          author_name: "Atom",
+          oracle_name: "Atom",
+          session_id: "atom-session-01",
+          content: "codex:backfill edit-history regression",
+          timestamp: "2026-06-19T05:06:00.000Z",
+          attachments: [],
+          raw: { source: "test" },
+        },
+      ]);
+      buildDb(root);
+      expect(search(root, "codex:backfill").some(row => row.message_id === "1005")).toBe(true);
+      expect(search(root, "edit-history").some(row => row.message_id === "1005")).toBe(true);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("very short Thai query is rejected to reduce bigram false positives", () => {
+    const root = mkdtempSync(join(tmpdir(), "atom-backfill-"));
+    try {
+      writeMirror(root, sampleEvents());
+      buildDb(root);
+      expect(search(root, "ต")).toEqual([]);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 

@@ -1,1 +1,16 @@
 bun test v1.3.14 (0d9b296a)
+
+tests/atom-backfill.test.ts:
+(pass) Atom Backfill v4 proof > mirror imports into SQLite and passes parity [21.07ms]
+(pass) Atom Backfill v4 proof > Nothing is Deleted keeps updates and tombstones as events [14.84ms]
+(pass) Atom Backfill v4 proof > Thai-ready search finds backfill content [18.34ms]
+(pass) Atom Backfill v4 proof > FTS query escapes punctuation instead of treating it as syntax [15.12ms]
+(pass) Atom Backfill v4 proof > very short Thai query is rejected to reduce bigram false positives [15.24ms]
+(pass) Atom Backfill v4 proof > converts real Discord raw JSONL shape into events [0.81ms]
+(pass) Atom Backfill v4 proof > demo writes report and summary card [15.78ms]
+(pass) Atom Backfill v4 proof > searchable keeps Thai raw text and adds tokens [0.08ms]
+
+ 8 pass
+ 0 fail
+ 20 expect() calls
+Ran 8 tests across 1 file. [136.00ms]

@@ -52,6 +52,13 @@ export function searchable(raw: string): string {
   return `${normalized} ${bigrams.join(" ")}`;
 }
 
+export function ftsQuery(raw: string): string {
+  const terms = searchable(raw)
+    .match(/[\p{L}\p{N}]+/gu)
+    ?.filter(term => term.length >= 2) ?? [];
+  return [...new Set(terms)].map(term => `"${term.replace(/"/g, "\"\"")}"`).join(" OR ");
+}
+
 export function sampleEvents(): RawEvent[] {
   return [
     {
@@ -225,10 +232,13 @@ export function parity(root: string) {
 export function search(root: string, query: string) {
   const p = paths(root);
   const db = new Database(p.db);
-  const safe = searchable(query).replace(/["']/g, " ").trim();
-  let rows = db.query(`SELECT m.message_id, m.author_name, m.oracle_name, m.content_raw, bm25(messages_fts) rank FROM messages_fts JOIN messages_current m ON m.message_id=messages_fts.message_id WHERE messages_fts MATCH ? ORDER BY bm25(messages_fts) LIMIT 10`).all(safe) as any[];
+  const safe = ftsQuery(query);
+  let rows: any[] = [];
+  if (safe) {
+    rows = db.query(`SELECT m.message_id, m.author_name, m.oracle_name, m.content_raw, bm25(messages_fts) rank FROM messages_fts JOIN messages_current m ON m.message_id=messages_fts.message_id WHERE messages_fts MATCH ? ORDER BY bm25(messages_fts) LIMIT 10`).all(safe) as any[];
+  }
   if (!rows.length) {
-    const terms = [...new Set(query.normalize("NFKC").toLowerCase().split(/\s+/).filter(Boolean))];
+    const terms = [...new Set(query.normalize("NFKC").toLowerCase().match(/[\p{L}\p{N}]+/gu)?.filter(term => term.length >= 2) ?? [])];
     if (terms.length) {
       const clauses = terms.map(() => "content_searchable LIKE ?").join(" OR ");
       rows = db.query(`SELECT message_id, author_name, oracle_name, content_raw, 999 AS rank FROM messages_current WHERE deleted=0 AND (${clauses}) LIMIT 10`).all(...terms.map(t => `%${t}%`)) as any[];

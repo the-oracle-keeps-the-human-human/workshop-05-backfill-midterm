@@ -47,7 +47,7 @@ Observed output:
 - parity: true
 - attachments: 536
 - search hits for backfill: 10
-- tests: 6 pass / 0 fail
+- tests: 8 pass / 0 fail
 
 Artifacts:
 
@@ -83,9 +83,12 @@ Atom read the PR comments from Tonk, Vessel, ChaiKlang, and Nova/No.10-style com
 - **Screenshot clarity** — generated SVG proof cards are named `summary-card.svg`, not screenshot. The real proof image is `artifacts/real-room/real-browser-capture.png`, captured by Chrome headless from `capture.html`.
 - **Event ordering** — events now carry `sequence_no` in SQLite, so the append-only log has a stable fold order in addition to timestamp/message IDs.
 - **Event ratio explanation** — `4,213 messages → 8,517 events` comes from one `message_create` per message, plus `message_update` for archived edits, `reaction_add` summary events per emoji reaction, and one `permission_probe` event.
+- **FTS punctuation safety** — search now tokenizes and quotes literal terms before SQLite FTS `MATCH`, with regression coverage for `codex:backfill` and `edit-history`.
+- **Short Thai query guard** — one-character Thai queries return no result instead of broad substring matches, reducing char-bigram false positives for short queries.
 
 ### Design choice kept for now
 
 - **Event envelopes vs version rows** — Atom keeps an event-sourcing model. The raw JSONL mirror is the append-only write-ahead/event log, and SQLite tables are rebuildable query views. `messages_current` is the materialized head produced by folding create/update/delete events, so search does not need to fold the whole event log at query time.
 - **Permission probes** — this proof stores one archive-time probe because live REST returned `403` in Atom's environment. A production version should re-probe periodically and before export.
 - **RRF/hybrid search** — not added in this PR because the submitted implementation is a proof-level FTS/Thai-ready search path. RRF with vector search is a good next phase, but adding a fake vector layer would overclaim.
+- **Live-tail/WebSocket** — not added in this PR. The current submission proves backfill, mirror, event folding, search, parity, and artifact capture. Live gateway tail should reuse the same event envelope writer, but claiming it without a real gateway test would overstate the proof.
