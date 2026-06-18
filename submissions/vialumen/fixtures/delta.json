@@ -11,7 +11,5 @@
     {"id": "1500000000000020001", "channel_id": "1500000000000000002", "author_id": "a3", "author_name": "carol", "content": "hybrid search beats pure vector for exact CLI names and ids", "thread_id": "1500000000000000002"},
     {"id": "1500000000000020002", "channel_id": "1500000000000000002", "author_id": "a2", "author_name": "bob", "content": "add a parity check before building the frontend", "thread_id": "1500000000000000002"}
   ],
-  "delete_events": [
-    {"id": "1500000000000010002", "channel_id": "1500000000000000001"}
-  ]
+  "_note": "message 1500000000000010002 is absent here = deleted in source; warm sync tombstones it via reconcile-by-absence (no explicit delete event needed)"
 }

@@ -1,24 +1,13 @@
 ### backfill-mvp — captured stdout (real run, reproducible)
-### $ python3 --version -> Python 3.10.12
-### reproduce: python3 tests/test_demo.py   (and the cli commands below)
+### $ Python 3.10.12 | reproduce: python3 tests/test_demo.py
 
 $ python3 cli.py backfill --fixture fixtures/cold.json --db .data/m.sqlite
   cold 1500000000000000001: +4 edits=0 del=0 (fetched 4)
   cold 1500000000000000002: +2 edits=0 del=0 (fetched 2)
 ✓ cold backfill done + vectors indexed
 
-$ python3 cli.py parity --fixture fixtures/cold.json --db .data/m.sqlite
-  [OK ] general: source=4 db=4 missing=0 extra(tombstone)=0
-  [OK ] design-chat: source=2 db=2 missing=0 extra(tombstone)=0
-✓ parity OK — every source message ingested
-
-$ python3 cli.py backfill --fixture fixtures/cold.json --db .data/m.sqlite   # idempotent re-run
-  cold 1500000000000000001: +0 edits=0 del=0 (fetched 0)
-  cold 1500000000000000002: +0 edits=0 del=0 (fetched 0)
-✓ cold backfill done + vectors indexed
-
-$ python3 cli.py sync --fixture fixtures/delta.json --db .data/m.sqlite       # warm tail: new+edit+delete
-  warm 1500000000000000001: +1 edits=1 del=1 (fetched 6)
+$ python3 cli.py sync --fixture fixtures/delta.json --db .data/m.sqlite   # warm: new + edit + delete(by-absence)
+  warm 1500000000000000001: +1 edits=1 del=1 (fetched 5)
   warm 1500000000000000002: +0 edits=0 del=0 (fetched 2)
 ✓ warm sync done
 
@@ -31,7 +20,7 @@ $ python3 cli.py stats --db .data/m.sqlite
   "edited_messages": 1,
   "vectors": 6,
   "fts_rows": 6,
-  "runs": 6
+  "runs": 4
 }
 
 $ python3 cli.py search 'semantic embeddings' --mode hybrid --db .data/m.sqlite
@@ -42,7 +31,7 @@ $ python3 cli.py search 'semantic embeddings' --mode hybrid --db .data/m.sqlite
   5. [dave] backfill cold history first then keep an incremental tail
   6. [bob] add a parity check before building the frontend
 
-$ python3 cli.py parity --fixture fixtures/delta.json --db .data/m.sqlite      # tombstone != gap
+$ python3 cli.py parity --fixture fixtures/delta.json --db .data/m.sqlite
   [OK ] general: source=4 db=5 missing=0 extra(tombstone)=1
   [OK ] design-chat: source=2 db=2 missing=0 extra(tombstone)=0
 ✓ parity OK — every source message ingested

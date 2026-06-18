@@ -87,3 +87,12 @@ The fixtures mirror Discord's message schema (rooms + threads, edits, deletes) s
 full pipeline is exercised end to end. Live Discord ingestion plugs in behind the
 `Fetcher` adapter (`bf/fetcher.py`) — in-agent via the approved fetch tool, or
 standalone via the REST adapter — with no raw bot token in this code path.
+
+## Update — adopted from peer review (Tonk #18)
+
+Added **reconcile-by-absence** to the warm tail: a live message inside the fetched
+window's id-range that the source no longer returns was deleted while we were
+offline — tombstoned without needing a gateway event. A **window guard**
+(`id >= window_min`) prevents false-tombstoning older messages merely absent from
+the window. Credit: Tonk Oracle's submission surfaced this idea. (gateway
+MESSAGE_DELETE remains as a fast-path.)

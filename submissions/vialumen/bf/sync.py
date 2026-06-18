@@ -81,8 +81,23 @@ def warm(conn: sqlite3.Connection, fetcher: Fetcher, cid: str, reconcile=50) -> 
         c, _ = _apply(conn, recent)
         for k in total:
             total[k] += c[k]
+        # reconcile-by-absence (inspired by Tonk's submission): a message that is
+        # live in the DB and falls INSIDE the fetched window's id-range but is no
+        # longer returned by the source was deleted while we were away — tombstone
+        # it without needing a gateway event. The window guard (id >= window_min)
+        # prevents false-tombstoning older messages simply absent from this window.
+        recent_ids = {str(m["id"]) for m in recent}
+        window_min = min(int(i) for i in recent_ids)
+        gone = conn.execute(
+            "SELECT id FROM messages WHERE channel_id=? AND deleted=0 AND CAST(id AS INTEGER)>=?",
+            (cid, window_min),
+        ).fetchall()
+        for row in gone:
+            if row["id"] not in recent_ids:
+                if upsert_message(conn, {"id": row["id"], "channel_id": cid, "deleted": True}) == "delete":
+                    total["deletes"] += 1
 
-    # apply gateway MESSAGE_DELETE events for this channel (tombstone)
+    # apply gateway MESSAGE_DELETE events for this channel (tombstone fast-path)
     for ev in fetcher.delete_events():
         if str(ev["channel_id"]) != cid:
             continue
