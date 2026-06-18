@@ -1,0 +1,6 @@
+{
+  "name": "tonk-indexer-submission",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": { "test": "bun test", "backfill": "bun run-backfill.ts" }
+}

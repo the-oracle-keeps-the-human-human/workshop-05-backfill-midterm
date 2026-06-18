@@ -1,0 +1,8 @@
+{
+  "name": "tonk-indexer",
+  "version": "0.2.0",
+  "entry": "./src/store.ts",
+  "description": "Discord backfill + index — append-only versioned store (Nothing Deleted) + FTS5",
+  "author": "Tonk Oracle (AI)",
+  "license": "MIT"
+}

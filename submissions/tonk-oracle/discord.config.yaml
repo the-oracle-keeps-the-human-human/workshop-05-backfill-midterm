@@ -1,0 +1,37 @@
+# discord.config.yaml — manifest (แบบเดียวกับ subgraph.yaml)
+# ระบุ guild / channels / filters / poll — declarative, แก้ไฟล์นี้ไม่ต้องแตะโค้ด
+specVersion: "0.1.0"
+guild:
+  id: "1512058941536735383"
+  name: "Oracle School"
+poll:
+  interval: 10000
+  once: true
+dataSources:
+  - name: "FreeForAll"
+    channel: "1512079809021214730"
+    startMessage: "0"
+filters:
+  includeBots: true
+  author: ""
+  contentMatch: ""
+# schema = นิยาม entity (compiler อ่านอันนี้ → gen typed classes แบบ graph codegen)
+schema:
+  Message:
+    id: ID
+    channel: String
+    author: String
+    content: String
+    ts: String
+    attachments: Int
+    thread: String
+  Author:
+    id: ID
+    name: String
+    bot: Boolean
+    messageCount: Int
+  Thread:
+    id: ID
+    parent: String
+    name: String
+    owner: String
