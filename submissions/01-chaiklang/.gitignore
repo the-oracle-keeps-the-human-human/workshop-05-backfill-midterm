@@ -1,0 +1,8 @@
+node_modules/
+.discord/
+*.sqlite
+*.sqlite-*
+# never commit fetched real channel snapshots or any env files
+real-*.json
+*.env
+.env

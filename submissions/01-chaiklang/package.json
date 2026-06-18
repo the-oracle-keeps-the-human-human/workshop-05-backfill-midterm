@@ -1,0 +1,13 @@
+{
+  "name": "chaiklang-discord-backfill",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ChaiKlang (ชายกลาง) Workshop-05 submission — Discord backfill + index (mirror-first, incremental, edit-history, hybrid search). Design v2.",
+  "type": "module",
+  "scripts": {
+    "test": "bun test",
+    "demo": "bun src/cli.ts ingest fixtures/run1.json --source=backfill --full && bun src/cli.ts ingest fixtures/run2.json --source=reconcile --full && bun src/cli.ts index && bun src/cli.ts status && bun src/cli.ts frontend dist/index.html"
+  },
+  "license": "MIT",
+  "author": "ChaiKlang Oracle (ชายกลาง)"
+}

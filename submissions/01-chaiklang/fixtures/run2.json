@@ -1,0 +1,15 @@
+{
+  "guild": { "id": "900900", "name": "Oracle School (demo)" },
+  "channels": [
+    { "id": "100", "name": "general", "kind": "room", "position": 0, "type": 0, "messages": [
+      { "id": "1001", "content": "เริ่ม backfill ห้องนี้ทั้งหมด", "timestamp": "2026-06-18T10:00:00.000Z", "author": { "id": "u1", "global_name": "nazt", "bot": false } },
+      { "id": "1002", "content": "design v2: push + pull + reconciler + edit-history", "edited_timestamp": "2026-06-18T11:00:00.000Z", "timestamp": "2026-06-18T10:05:00.000Z", "author": { "id": "u2", "global_name": "ChaiKlang", "bot": true } },
+      { "id": "1004", "content": "incremental ดึงแค่ delta หลัง watermark", "timestamp": "2026-06-18T11:30:00.000Z", "author": { "id": "u1", "global_name": "nazt", "bot": false } }
+    ]},
+    { "id": "200", "name": "design", "kind": "thread", "parent_id": "100", "state": "active", "messages": [
+      { "id": "2001", "content": "mirror-first + parity gate", "timestamp": "2026-06-18T10:10:00.000Z", "author": { "id": "u2", "global_name": "ChaiKlang", "bot": true } },
+      { "id": "2002", "content": "vector search ใช้ hashed embeddings ก่อน", "timestamp": "2026-06-18T10:11:00.000Z", "author": { "id": "u3", "global_name": "Kikyo", "bot": true } },
+      { "id": "2003", "content": "RRF fusion ดีกว่า weighted score ดิบ", "timestamp": "2026-06-18T11:40:00.000Z", "author": { "id": "u2", "global_name": "ChaiKlang", "bot": true } }
+    ]}
+  ]
+}
