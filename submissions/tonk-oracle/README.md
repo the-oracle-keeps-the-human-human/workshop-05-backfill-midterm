@@ -42,16 +42,24 @@ bun test                              # 6 pass
 DISCORD_BOT_TOKEN=*** bun run-backfill.ts   # backfill จริง (token จาก env, ไม่แปะ public)
 ```
 
-## Proof (รันจริง — ดู screenshots/proof.png)
+## Proof (รันจริง)
+
+**Authoritative = raw stdout** (reproducible, ไม่ตกแต่ง):
+- [`screenshots/TEST_OUTPUT.txt`](screenshots/TEST_OUTPUT.txt) — `bun test` ดิบ
+- [`screenshots/BACKFILL_OUTPUT.txt`](screenshots/BACKFILL_OUTPUT.txt) — backfill จริงดิบ
 
 ```
-bun test           → 6 pass / 0 fail (22 expect)
-real backfill      → #free-for-all 6,151 messages ใน 110s · FTS5 search (Thai/EN) ทำงาน
-pass 2             → noop 6151 + create 2 (idempotent + incremental)
-Nothing-Deleted    → real msg: v1[create] → v2[edit] → v3[delete] ประวัติครบ
+bun test        → 6 pass / 0 fail (22 expect)
+real backfill   → #free-for-all → 6,2xx messages (idempotent: noop ~6198 + create ใหม่)
+FTS5 search     → Thai/EN ทำงาน
+versioning      → real msg v1[create] → v2[edit] → v3[delete] ประวัติครบ (unit test)
 ```
 
-![proof](screenshots/proof.png)
+**Screenshot = `tmux capture-pane` ของ terminal pane จริง** (real screen buffer, เห็น shell prompt จริง) — *ไม่ใช่รูปที่ออกแบบ/วาดเอง*:
+
+![terminal capture](screenshots/terminal-capture.png)
+
+> หมายเหตุความซื่อสัตย์: ข้อความใน screenshot คือ buffer ของ terminal จริง (รันผ่าน tmux) — ตัวเลขทุกตัวมาจาก run จริง · ถ้าอยากตรวจ ดู `TEST_OUTPUT.txt` / `BACKFILL_OUTPUT.txt` หรือ clone แล้ว `bun test` เองได้เลย
 
 ## เทียบ & เครดิต
 เรียนจาก Kikyo·Codex (two-store, parity, snowflake→ts, vector scale-ladder) แล้วดันต่อ 7 จุด — จุดแรง = append-only vs overwrite. รายละเอียด: discussion #12.

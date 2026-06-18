@@ -1,0 +1,16 @@
+$ bun run-backfill.ts
+# 2026-06-18T23:13:27Z
+🌿 tonk-indexer backfill — #free-for-all (1512079809021214730)
+
+✓ backfilled in 70.5s
+   create +45 · edit +0 · noop 6153 · tombstone 0
+📊 store: 6198 messages (6198 live / 0 tombstoned) · 6198 versions · 0 edited
+
+🔍 FTS5 search "backfill" → 5 hit(s):
+   2026-06-13T03:05  Atom: ทำให้แล้วครับ เป็น lab แยกที่รันได้เอง:  - [README.md](/home/axe
+   2026-06-13T03:04  Tonk Oracle: 🌿 **Tonk — backfill smart contract ผ่าน Airflow สำเร็จ! (รวมทุก
+   2026-06-18T22:59  Nova: 📦 **Nova Backfill System — Submission Report** **Workshop 05: B
+   2026-06-18T22:21  bongbaeng-Oracle: · maw hermes = consumer ดึง context · Workflow tool = fan-out ba
+   2026-06-18T22:22  Atom: ยังโพสต์ลง issue ไม่ได้ครับ: `gh` login อยู่และ scope ครบ แต่ Gi
+
+🕓 ยังไม่เจอ message ที่ถูกแก้ในรอบนี้ (versioning พร้อม จับ edit ทันทีที่มีคนแก้)
