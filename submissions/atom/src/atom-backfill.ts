@@ -166,7 +166,7 @@ export function writeMirror(root: string, events = sampleEvents()) {
 
 const SCHEMA = `
 PRAGMA journal_mode=WAL;
-CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, type TEXT NOT NULL, guild_id TEXT NOT NULL, channel_id TEXT NOT NULL, thread_id TEXT, message_id TEXT, author_id TEXT, author_name TEXT, oracle_name TEXT, session_id TEXT, content_raw TEXT, content_searchable TEXT, timestamp TEXT NOT NULL, raw_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, type TEXT NOT NULL, guild_id TEXT NOT NULL, channel_id TEXT NOT NULL, thread_id TEXT, message_id TEXT, author_id TEXT, author_name TEXT, oracle_name TEXT, session_id TEXT, content_raw TEXT, content_searchable TEXT, timestamp TEXT NOT NULL, raw_json TEXT NOT NULL, sequence_no INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS messages_current (message_id TEXT PRIMARY KEY, latest_event_id TEXT NOT NULL, guild_id TEXT NOT NULL, channel_id TEXT NOT NULL, thread_id TEXT, author_name TEXT, oracle_name TEXT, session_id TEXT, content_raw TEXT, content_searchable TEXT, deleted INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS attachments (id TEXT PRIMARY KEY, event_id TEXT NOT NULL, message_id TEXT, filename TEXT NOT NULL, content_type TEXT, size INTEGER);
 CREATE TABLE IF NOT EXISTS permission_probes (id TEXT PRIMARY KEY, guild_id TEXT NOT NULL, channel_id TEXT NOT NULL, thread_id TEXT, rest_read INTEGER NOT NULL, gateway_seen INTEGER NOT NULL, can_send INTEGER NOT NULL, attachment_visible INTEGER NOT NULL, timestamp TEXT NOT NULL);
@@ -181,17 +181,17 @@ export function buildDb(root: string) {
   const db = new Database(p.db);
   db.exec(SCHEMA);
   const events = readJsonl(join(p.mirror, "events.jsonl"));
-  const insertEvent = db.prepare("INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const insertEvent = db.prepare("INSERT INTO events (id,type,guild_id,channel_id,thread_id,message_id,author_id,author_name,oracle_name,session_id,content_raw,content_searchable,timestamp,raw_json,sequence_no) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
   const upsertCurrent = db.prepare("INSERT OR REPLACE INTO messages_current VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
   const insertAttachment = db.prepare("INSERT OR REPLACE INTO attachments VALUES (?,?,?,?,?,?)");
   const insertProbe = db.prepare("INSERT OR REPLACE INTO permission_probes VALUES (?,?,?,?,?,?,?,?,?)");
   const insertQuarantine = db.prepare("INSERT OR REPLACE INTO secret_quarantine VALUES (?,?)");
   const insertFts = db.prepare("INSERT INTO messages_fts VALUES (?,?,?,?,?,?)");
   db.transaction(() => {
-    for (const e of events) {
+    for (const [i, e] of events.entries()) {
       const text = e.content || "";
       const stext = searchable(text);
-      insertEvent.run(e.id, e.type, e.guild_id, e.channel_id, e.thread_id || null, e.message_id || null, e.author_id || null, e.author_name || null, e.oracle_name || null, e.session_id || null, text, stext, e.timestamp, JSON.stringify(e.raw));
+      insertEvent.run(e.id, e.type, e.guild_id, e.channel_id, e.thread_id || null, e.message_id || null, e.author_id || null, e.author_name || null, e.oracle_name || null, e.session_id || null, text, stext, e.timestamp, JSON.stringify(e.raw), i + 1);
       if (SECRET_RE.test(text)) insertQuarantine.run(e.id, "secret-like content redacted from export");
       for (const a of e.attachments || []) insertAttachment.run(a.id, e.id, e.message_id || null, a.filename, a.content_type || null, a.size || null);
       if (e.type === "permission_probe" && e.probe) insertProbe.run(e.id, e.guild_id, e.channel_id, e.thread_id || null, +e.probe.rest_read, +e.probe.gateway_seen, +e.probe.can_send, +e.probe.attachment_visible, e.timestamp);

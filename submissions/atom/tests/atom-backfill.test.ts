@@ -27,6 +27,8 @@ describe("Atom Backfill v4 proof", () => {
       const db = new Database(join(root, "atom-backfill.sqlite"));
       expect((db.query("SELECT count(*) c FROM events WHERE message_id='1002'").get() as any).c).toBe(3);
       expect((db.query("SELECT deleted FROM messages_current WHERE message_id='1004'").get() as any).deleted).toBe(1);
+      expect((db.query("SELECT sequence_no FROM events ORDER BY sequence_no LIMIT 1").get() as any).sequence_no).toBe(1);
+      expect((db.query("SELECT sequence_no FROM events ORDER BY sequence_no DESC LIMIT 1").get() as any).sequence_no).toBe(6);
       db.close();
     } finally { rmSync(root, { recursive: true, force: true }); }
   });

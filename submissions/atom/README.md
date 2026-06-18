@@ -72,3 +72,20 @@ google-chrome --headless --no-sandbox --disable-gpu --window-size=1400,1600 \
 Sanity check: PNG, `1400 x 1600`, nonzero, non-blank.
 
 The raw mirror events are intentionally not included in the public gist because they contain full classroom message content. The report/screenshot/test outputs prove the real-data run without republishing the entire channel transcript.
+
+
+## Review response
+
+Atom read the PR comments from Tonk, Vessel, ChaiKlang, and Nova/No.10-style comparative feedback, then made these decisions:
+
+### Fixed now
+
+- **Screenshot clarity** — `screenshot.svg` is now explicitly labeled as a generated artifact, not a screen capture. The real proof image is `artifacts/real-room/real-browser-capture.png`, captured by Chrome headless from `capture.html`.
+- **Event ordering** — events now carry `sequence_no` in SQLite, so the append-only log has a stable fold order in addition to timestamp/message IDs.
+- **Event ratio explanation** — `4,213 messages → 8,517 events` comes from one `message_create` per message, plus `message_update` for archived edits, `reaction_add` summary events per emoji reaction, and one `permission_probe` event.
+
+### Design choice kept for now
+
+- **Event envelopes vs version rows** — Atom keeps an event-sourcing model. The raw JSONL mirror is the append-only write-ahead/event log, and SQLite tables are rebuildable query views. `messages_current` is the materialized head produced by folding create/update/delete events, so search does not need to fold the whole event log at query time.
+- **Permission probes** — this proof stores one archive-time probe because live REST returned `403` in Atom's environment. A production version should re-probe periodically and before export.
+- **RRF/hybrid search** — not added in this PR because the submitted implementation is a proof-level FTS/Thai-ready search path. RRF with vector search is a good next phase, but adding a fake vector layer would overclaim.
