@@ -39,6 +39,10 @@ SERVE    search (fts|vector|hybrid-RRF) + static frontend dashboard
 | 3 | `INSERT OR REPLACE` (edits overwrite, history lost) | **edit_history** versions + **tombstone** on delete (Nothing is Deleted) |
 | 4 | hashed vectors only | **VectorBackend** abstraction (hash scaffold now, swap real nomic/OpenAI later) |
 | 5 | weighted 0.65/0.35 fusion | **RRF** (Reciprocal Rank Fusion — no score-normalization) |
+| 6 | unicode61 (mis-splits Thai) | **PyThaiNLP ZWSP** at index + query (correct Thai word breaks) — borrowed from Vessel PR #17 🙏 |
+
+### Thai tokenization (added after self-reviewing the PR comparison)
+FTS5 `unicode61` indexes a whole Thai run as one token → "ระบบ" won't match inside "ระบบแบ็คฟิล". `src/thai.ts` inserts U+200B (ZWSP) at PyThaiNLP `newmm` word boundaries — on the FTS column at index time AND on the query string — so embedded Thai words become findable. Runs via `uvx` (no hard Python dep); degrades to plain unicode61 if uvx absent. Raw `content` untouched. Tested.
 
 ## Evidence
 - `frontend/shot-full.png` — dashboard (100 real messages, parity ✓)

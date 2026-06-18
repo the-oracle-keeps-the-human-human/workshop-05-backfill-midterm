@@ -90,3 +90,14 @@ test("hybrid search finds inserted content; tombstoned excluded", async () => {
   buildIndex(dbPath);
   expect(search(dbPath, "parity keyword", "fts", 5).find(h => h.id === "100")).toBeUndefined();
 });
+
+test("Thai tokenization: word inside a compound is findable (ZWSP fix)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "singbf-th-")); const dbPath = join(dir, "t.sqlite"); const mirror = join(dir, "mirror");
+  await backfill({
+    dbPath, mirrorDir: mirror, channelId: "c", channelName: "test",
+    source: { kind: "fixture", messages: [msg("100", "ระบบแบ็คฟิลของสิงห์ทำงานได้จริง"), msg("200", "unrelated english text")] },
+  });
+  // "ระบบ" is embedded with no spaces — unicode61 alone would miss it; ZWSP segmentation finds it
+  const hits = search(dbPath, "ระบบ", "fts", 5);
+  expect(hits.find(h => h.id === "100")).toBeDefined();
+});

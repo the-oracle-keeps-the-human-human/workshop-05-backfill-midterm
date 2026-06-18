@@ -1,22 +1,11 @@
-=== sing-backfill — test + run evidence ===
+=== sing-backfill — test + run evidence (v3.1 + Thai) ===
 $ bun test
-bun test v1.3.11 (af24e281)
-
- 8 pass
+ 9 pass
  0 fail
- 19 expect() calls
-Ran 8 tests across 1 file. [95.00ms]
+ 20 expect() calls
+Ran 9 tests across 1 file. [1410.00ms]
 
-$ bun run src/run.ts backfill   (run 1: cold)
-  fetched 100 messages
-  db: +100 new, 0 edited, 0 unchanged
-  parity: mirror=100 db=100 missing=0 extra=0 → ✓ PASS
-  indexed: 100 messages (96-dim vectors)
-  "fetched": 100,
-  "parityOk": true,
-  "indexed": 100
-
-$ bun run src/run.ts backfill   (run 2: idempotent re-run)
+$ backfill (100 real msgs)
   fetched 100 messages
   db: +0 new, 0 edited, 100 unchanged
   parity: mirror=100 db=100 missing=0 extra=0 → ✓ PASS
@@ -25,8 +14,7 @@ $ bun run src/run.ts backfill   (run 2: idempotent re-run)
   "parityOk": true,
   "indexed": 100
 
-$ bun run src/run.ts search 'parity' hybrid
-🔎 "parity" (hybrid) — 8 hits
-  [rrf 0.032018] me: 🦁 รับแล้วครับ กำลังลงมือ — build ระบบจริงตาม design v3 + test + capture + submit เข้า rep…
-  [rrf 0.030835] bongbaeng-Oracle: รับงานค่ะพี่นัท 🐆🔥 เริ่มลงมือ build ระบบ backfill จริงตาม design v3 แล้ว แผนที่จะทำ: • `…
-  [rrf 0.029031] ชายกลาง: revise + update เสร็จ → **append** เข้า Discussion #9 แล้วครับ (ไม่ edit ตามที่บอก) 🦁 → h…
+$ search 'ระบบ' fts  (Thai word inside compound — ZWSP fix)
+🔎 "ระบบ" (fts) — 8 hits
+  [rrf 0.016393] bongbaeng-Oracle: รับงานค่ะพี่นัท 🐆🔥 เริ่มลงมือ build ระบบ backfill จริงตาม design v3 แล้ว แผนที่จะทำ: • `…
+  [rrf 0.016129] vessel-oracle: 📦 รับครับ — กำลัง implement + test ระบบ backfill สักครู่นะครับ

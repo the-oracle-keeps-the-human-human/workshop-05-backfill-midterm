@@ -2,6 +2,7 @@
 // + VectorBackend abstraction (swap hashed scaffold → real embeddings later).
 import { Database } from "bun:sqlite";
 import { openDb } from "./db.ts";
+import { segmentThaiBatch, segmentThaiQuery } from "./thai.ts";
 
 const DIMS = 96;
 const STOP = new Set("the a an and or to of in is are be for with you your from this that ครับ ค่ะ นะ คือ แล้ว ได้ ไม่ มี เรา ผม ของ ที่ ใน เป็น ให้ กับ จาก จะ ก็ แต่ อ่ะ".split(" "));
@@ -37,14 +38,17 @@ export function buildIndex(dbPath: string, backend: VectorBackend = HashBackend)
   db.exec("DELETE FROM messages_fts; DELETE FROM message_vectors;");
   // only index non-deleted (tombstoned stay in messages table for audit, out of search)
   const rows = db.query("SELECT id, channel_name, author_name, content FROM messages WHERE deleted_at IS NULL").all() as any[];
+  // Thai fix: ZWSP-segment content for the FTS column so unicode61 sees word breaks.
+  // Raw content stays untouched in messages table — only the FTS index gets segmented.
+  const ftsContent = segmentThaiBatch(rows.map(r => r.content || ""));
   const fts = db.prepare("INSERT INTO messages_fts (message_id, channel_name, author_name, content) VALUES (?,?,?,?)");
   const vec = db.prepare("INSERT INTO message_vectors (message_id, dims, embedding_json) VALUES (?,?,?)");
   db.transaction(() => {
-    for (const r of rows) {
+    rows.forEach((r, i) => {
       const text = [r.channel_name, r.author_name, r.content].filter(Boolean).join(" ");
-      fts.run(r.id, r.channel_name || "", r.author_name || "", r.content || "");
+      fts.run(r.id, r.channel_name || "", r.author_name || "", ftsContent[i] ?? r.content ?? "");
       vec.run(r.id, backend.dims, JSON.stringify(backend.embed(text)));
-    }
+    });
   })();
   db.close();
   return { messages: rows.length, dims: backend.dims };
@@ -59,10 +63,12 @@ export function search(dbPath: string, query: string, mode: "fts" | "vector" | "
   const rrf = new Map<string, { fts?: number; vec?: number }>();
 
   if (mode !== "vector") {
+    // Thai fix: segment the query the SAME way as the index so ZWSP-broken Thai words match.
+    const ftsQuery = segmentThaiQuery(query).replace(/['"]/g, " ").replace(/​/g, " ").trim();
     const ftsRows = db.query(
       `SELECT m.id FROM messages_fts f JOIN messages m ON m.id=f.message_id
        WHERE messages_fts MATCH ? AND m.deleted_at IS NULL ORDER BY bm25(messages_fts) LIMIT ?`
-    ).all(query.replace(/['"]/g, " "), limit * 3) as any[];
+    ).all(ftsQuery || query.replace(/['"]/g, " "), limit * 3) as any[];
     ftsRows.forEach((r, i) => { const e = rrf.get(r.id) || {}; e.fts = i + 1; rrf.set(r.id, e); });
   }
   if (mode !== "fts") {
