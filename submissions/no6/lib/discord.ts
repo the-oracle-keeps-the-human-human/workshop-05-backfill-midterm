@@ -2,7 +2,6 @@
  * Discord REST API client — low-level methods split per endpoint.
  */
 import { readFileSync } from "fs";
-import { execSync } from "child_process";
 
 const API = "https://discord.com/api/v10";
 const UA = "maw-atlas/1.0.0";
@@ -24,21 +23,10 @@ function readEnvToken(file: string): string | null {
 export function getToken(): string | null {
   if (process.env.DISCORD_BOT_TOKEN) return process.env.DISCORD_BOT_TOKEN;
 
-  const candidates = [
-    process.env.HERMES_HOME ? `${process.env.HERMES_HOME}/.env` : null,
-    "/root/.hermes/.env",
-    "/root/.claude/channels/discord-no6/.env",
-    `${process.env.HOME}/.hermes/profiles/kikyo-codex/.env`,
-    `${process.env.HOME}/.hermes/.env`,
-  ].filter(Boolean) as string[];
-  for (const file of candidates) {
-    const token = readEnvToken(file);
-    if (token) return token;
-  }
+  const localEnv = readEnvToken(".env");
+  if (localEnv) return localEnv;
 
-  try {
-    return execSync("pass show discord/atlas-oracle-token 2>/dev/null", { encoding: "utf8" }).trim() || null;
-  } catch { return null; }
+  return null;
 }
 
 async function request(path: string, token: string, method = "GET", body?: any): Promise<any> {

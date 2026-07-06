@@ -51,6 +51,11 @@ function embedText(text: string): number[] {
   return v.map(x => Number((x / norm).toFixed(6)));
 }
 
+function ftsQuery(query: string): string {
+  const tokens = query.normalize("NFKC").match(/[\p{L}\p{N}_#]+/gu) || [];
+  return tokens.length ? tokens.map(t => `"${t}"`).join(" ") : "";
+}
+
 function dotProduct(a: number[], b: number[]): number {
   let s = 0;
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
@@ -323,7 +328,7 @@ function query(config: any, searchText: string) {
       WHERE messages_fts MATCH ? 
       ORDER BY bm25(messages_fts) 
       LIMIT 20
-    `).all(searchText.replace(/["']/g, " "));
+    `).all(ftsQuery(searchText));
 
     for (const r of ftsRows as any[]) {
       // Normalize ftsScore between 0 and 1
