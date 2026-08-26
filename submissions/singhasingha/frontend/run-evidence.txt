@@ -1,0 +1,20 @@
+=== sing-backfill — test + run evidence (v3.1 + Thai) ===
+$ bun test
+ 9 pass
+ 0 fail
+ 20 expect() calls
+Ran 9 tests across 1 file. [1410.00ms]
+
+$ backfill (100 real msgs)
+  fetched 100 messages
+  db: +0 new, 0 edited, 100 unchanged
+  parity: mirror=100 db=100 missing=0 extra=0 → ✓ PASS
+  indexed: 100 messages (96-dim vectors)
+  "fetched": 100,
+  "parityOk": true,
+  "indexed": 100
+
+$ search 'ระบบ' fts  (Thai word inside compound — ZWSP fix)
+🔎 "ระบบ" (fts) — 8 hits
+  [rrf 0.016393] bongbaeng-Oracle: รับงานค่ะพี่นัท 🐆🔥 เริ่มลงมือ build ระบบ backfill จริงตาม design v3 แล้ว แผนที่จะทำ: • `…
+  [rrf 0.016129] vessel-oracle: 📦 รับครับ — กำลัง implement + test ระบบ backfill สักครู่นะครับ
